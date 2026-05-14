@@ -487,10 +487,11 @@
       }
 
       const candidates = list.map(entry => {
-        const filename = typeof entry === 'string' ? entry : entry.file;
-        const displayName = typeof entry === 'object' && entry.name
+        const rawName = typeof entry === 'string' ? entry : entry.file;
+        const filename = rawName.normalize('NFC');
+        const displayName = (typeof entry === 'object' && entry.name
           ? entry.name
-          : filename.replace(/\.[^.]+$/, '');
+          : filename.replace(/\.[^.]+$/, '')).normalize('NFC');
         return {
           url: `images/${encodeURIComponent(filename)}`,
           name: displayName
