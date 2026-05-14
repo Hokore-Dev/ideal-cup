@@ -6,7 +6,7 @@
 <title>헤이호 월드컵</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600;9..144,900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #0e0e10;
@@ -24,7 +24,7 @@
     height: 100%;
     background: var(--bg);
     color: var(--ink);
-    font-family: 'Fraunces', serif;
+    font-family: 'Noto Sans KR', system-ui, -apple-system, sans-serif;
   }
 
   body {
@@ -39,32 +39,6 @@
   }
 
   .mono { font-family: 'JetBrains Mono', monospace; }
-
-  /* ===== 상단 헤더 ===== */
-  header {
-    padding: 16px 32px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid var(--line);
-    flex-shrink: 0;
-  }
-
-  header .logo {
-    font-family: 'Fraunces', serif;
-    font-weight: 900;
-    font-size: 20px;
-    letter-spacing: -0.02em;
-  }
-  header .logo span { color: var(--accent); }
-
-  header .status {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--ink-dim);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
 
   /* ===== 화면 공통 ===== */
   .screen {
@@ -103,8 +77,8 @@
     margin-bottom: 16px;
   }
   .intro-title em {
-    font-style: italic;
-    font-weight: 300;
+    font-style: normal;
+    font-weight: 900;
     color: var(--accent);
   }
 
@@ -187,8 +161,8 @@
     line-height: 1;
   }
   .round-title em {
-    font-style: italic;
-    font-weight: 300;
+    font-style: normal;
+    font-weight: 900;
     color: var(--accent);
   }
   .round-progress {
@@ -252,7 +226,7 @@
     padding: 60px 20px 20px;
     background: linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.4) 60%, transparent);
     color: var(--ink);
-    font-family: 'Fraunces', serif;
+    font-family: 'Noto Sans KR', sans-serif;
     font-weight: 700;
     font-size: clamp(20px, 2.6vw, 36px);
     letter-spacing: -0.01em;
@@ -264,12 +238,12 @@
   }
 
   .vs-divider {
-    font-family: 'Fraunces', serif;
-    font-size: 72px;
-    font-weight: 300;
-    font-style: italic;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 56px;
+    font-weight: 900;
     color: var(--accent);
     line-height: 1;
+    letter-spacing: -0.02em;
   }
 
   /* 선택 애니메이션 */
@@ -304,7 +278,6 @@
   .result-title {
     font-size: clamp(48px, 10vw, 120px);
     font-weight: 900;
-    font-style: italic;
     letter-spacing: -0.04em;
     margin-bottom: 32px;
     text-align: center;
@@ -344,9 +317,8 @@
   }
 
   .winner-name {
-    font-family: 'Fraunces', serif;
+    font-family: 'Noto Sans KR', sans-serif;
     font-weight: 700;
-    font-style: italic;
     font-size: clamp(32px, 6vw, 64px);
     color: var(--accent-2);
     letter-spacing: -0.02em;
@@ -420,11 +392,6 @@
 </head>
 <body>
 
-<header>
-  <div class="logo">IDEAL <span>/</span> CUP</div>
-  <div class="status mono" id="status">LOADING</div>
-</header>
-
 <!-- INTRO -->
 <section id="intro" class="screen active">
   <div class="intro-tag mono">Tournament of One</div>
@@ -487,7 +454,6 @@
   const introInfo = document.getElementById('introInfo');
   const startBtn = document.getElementById('startBtn');
   const errorBox = document.getElementById('errorBox');
-  const status = document.getElementById('status');
 
   const leftCard = document.getElementById('leftCard');
   const rightCard = document.getElementById('rightCard');
@@ -520,7 +486,7 @@
         throw new Error(`사진이 최소 2장 이상 필요해요 (현재: ${list.length}장)`);
       }
 
-      allImages = list.map(entry => {
+      const candidates = list.map(entry => {
         const filename = typeof entry === 'string' ? entry : entry.file;
         const displayName = typeof entry === 'object' && entry.name
           ? entry.name
@@ -531,16 +497,29 @@
         };
       });
 
+      introInfo.innerHTML = `<span class="loader"></span> 사진 확인 중…`;
+      const checks = await Promise.all(candidates.map(img => new Promise(resolve => {
+        const probe = new Image();
+        probe.onload = () => resolve(img);
+        probe.onerror = () => resolve(null);
+        probe.src = img.url;
+      })));
+      const missingCount = checks.filter(c => c === null).length;
+      allImages = checks.filter(Boolean);
+
+      if (allImages.length < 2) {
+        throw new Error(`불러올 수 있는 사진이 ${allImages.length}장이에요 (최소 2장 필요)`);
+      }
+
       const target = nearestPow2(allImages.length);
       const byes = target - allImages.length;
       const roundName = roundDisplayName(target);
-      introInfo.innerHTML = `${allImages.length}명 참가 → <strong>${roundName}</strong> ${byes > 0 ? `(부전승 ${byes}명)` : ''}`;
+      const missingNote = missingCount > 0 ? ` <span style="color:var(--ink-dim)">/ 로드 실패 ${missingCount}장 제외</span>` : '';
+      introInfo.innerHTML = `${allImages.length}명 참가 → <strong>${roundName}</strong> ${byes > 0 ? `(부전승 ${byes}명)` : ''}${missingNote}`;
       startBtn.disabled = false;
-      status.textContent = 'READY';
     } catch (err) {
       introInfo.innerHTML = '';
       errorBox.innerHTML = `⚠ ${err.message}<br><br>레포 루트에 <strong>images/</strong> 폴더와 <strong>images/manifest.json</strong> 파일이 있는지 확인해주세요.`;
-      status.textContent = 'ERROR';
     }
   }
 
@@ -587,7 +566,6 @@
 
     intro.classList.remove('active');
     game.classList.add('active');
-    status.textContent = 'IN PROGRESS';
     updateRoundUI();
     showNextMatch();
   }
@@ -689,7 +667,6 @@
     result.classList.add('active');
     winnerImg.src = w.url;
     winnerName.textContent = w.name;
-    status.textContent = 'COMPLETE';
   }
 
   restartBtn.addEventListener('click', () => {
@@ -698,7 +675,6 @@
     currentMatch = 0;
     result.classList.remove('active');
     intro.classList.add('active');
-    status.textContent = 'READY';
   });
 
   // ========= 시작 =========
