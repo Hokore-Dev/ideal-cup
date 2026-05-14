@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>이상형 월드컵</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600;9..144,900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e10;
+    --bg-soft: #17171b;
+    --ink: #f5f1e8;
+    --ink-dim: #8a8580;
+    --accent: #ff3d2e;
+    --accent-2: #ffd23f;
+    --line: rgba(245, 241, 232, 0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Fraunces', serif;
+    overflow-x: hidden;
+  }
+
+  body {
+    background-image:
+      radial-gradient(ellipse at top left, rgba(255, 61, 46, 0.08), transparent 50%),
+      radial-gradient(ellipse at bottom right, rgba(255, 210, 63, 0.06), transparent 50%);
+    min-height: 100vh;
+  }
+
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* ===== 상단 헤더 ===== */
+  header {
+    padding: 24px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--line);
+  }
+
+  header .logo {
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-size: 20px;
+    letter-spacing: -0.02em;
+  }
+  header .logo span { color: var(--accent); }
+
+  header .status {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* ===== 화면 공통 ===== */
+  .screen {
+    display: none;
+    min-height: calc(100vh - 73px);
+    padding: 48px 32px;
+  }
+  .screen.active { display: block; }
+
+  /* ===== 인트로 화면 ===== */
+  #intro {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  #intro.active { display: flex; }
+
+  .intro-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+
+  .intro-title {
+    font-size: clamp(56px, 12vw, 160px);
+    font-weight: 900;
+    line-height: 0.85;
+    letter-spacing: -0.04em;
+    margin-bottom: 16px;
+  }
+  .intro-title em {
+    font-style: italic;
+    font-weight: 300;
+    color: var(--accent);
+  }
+
+  .intro-sub {
+    font-size: 18px;
+    color: var(--ink-dim);
+    max-width: 480px;
+    margin-bottom: 16px;
+    font-weight: 300;
+  }
+
+  .intro-info {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-dim);
+    margin-bottom: 48px;
+    min-height: 18px;
+  }
+  .intro-info strong { color: var(--accent-2); }
+
+  .start-btn {
+    background: var(--accent);
+    color: var(--ink);
+    border: none;
+    padding: 18px 48px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 2px;
+    font-weight: 700;
+  }
+  .start-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(255, 61, 46, 0.3);
+  }
+  .start-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  .error-box {
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    max-width: 480px;
+    line-height: 1.6;
+    margin-top: 16px;
+  }
+
+  /* ===== 게임 화면 ===== */
+  #game.active { display: flex; flex-direction: column; }
+
+  .round-info {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .round-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .round-title {
+    font-size: clamp(36px, 6vw, 64px);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  .round-title em {
+    font-style: italic;
+    font-weight: 300;
+    color: var(--accent);
+  }
+  .round-progress {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-dim);
+    margin-top: 12px;
+  }
+
+  .vs-arena {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 24px;
+    align-items: center;
+    flex: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .candidate {
+    aspect-ratio: 3 / 4;
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    border-radius: 4px;
+  }
+  .candidate img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .candidate:hover {
+    transform: translateY(-6px);
+    border-color: var(--accent);
+  }
+  .candidate:hover img { transform: scale(1.04); }
+
+  .candidate::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.6), transparent 50%);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .candidate:hover::after { opacity: 1; }
+
+  .candidate-label {
+    position: absolute;
+    bottom: 24px;
+    left: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 2;
+  }
+  .candidate:hover .candidate-label { opacity: 1; }
+
+  .vs-divider {
+    font-family: 'Fraunces', serif;
+    font-size: 72px;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  /* 선택 애니메이션 */
+  .candidate.chosen {
+    transform: scale(1.05);
+    border-color: var(--accent-2);
+    box-shadow: 0 0 60px rgba(255, 210, 63, 0.3);
+  }
+  .candidate.rejected {
+    opacity: 0.2;
+    transform: scale(0.92);
+    filter: grayscale(1);
+  }
+
+  /* ===== 결과 화면 ===== */
+  #result.active {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .result-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--accent-2);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .result-title {
+    font-size: clamp(48px, 10vw, 120px);
+    font-weight: 900;
+    font-style: italic;
+    letter-spacing: -0.04em;
+    margin-bottom: 32px;
+    text-align: center;
+    line-height: 0.9;
+  }
+  .result-title span { color: var(--accent); }
+
+  .winner-frame {
+    position: relative;
+    width: min(420px, 80vw);
+    aspect-ratio: 3 / 4;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 32px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+  }
+  .winner-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .winner-frame::before {
+    content: 'WINNER';
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: var(--accent);
+    color: var(--ink);
+    padding: 6px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    z-index: 2;
+    border-radius: 2px;
+  }
+
+  .restart-btn {
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--line);
+    padding: 16px 40px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 2px;
+  }
+  .restart-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* 페이드 인 */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade-in { animation: fadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+  @keyframes pop {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .pop { animation: pop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+  /* 로딩 */
+  .loader {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--line);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* 모바일 */
+  @media (max-width: 768px) {
+    .vs-arena {
+      grid-template-columns: 1fr;
+      grid-template-rows: 1fr auto 1fr;
+      gap: 16px;
+    }
+    .candidate { aspect-ratio: 4 / 3; }
+    .vs-divider { font-size: 40px; }
+    header { padding: 16px 20px; }
+    .screen { padding: 24px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">IDEAL <span>/</span> CUP</div>
+  <div class="status mono" id="status">LOADING</div>
+</header>
+
+<!-- INTRO -->
+<section id="intro" class="screen active">
+  <div class="intro-tag mono">Tournament of One</div>
+  <h1 class="intro-title">이상형<br><em>월드컵</em></h1>
+  <p class="intro-sub">두 장 중에 더 끌리는 쪽을 골라보세요.<br>마지막에 남는 한 명이 당신의 이상형이에요.</p>
+
+  <div class="intro-info mono" id="introInfo"><span class="loader"></span></div>
+
+  <button class="start-btn" id="startBtn" disabled>토너먼트 시작</button>
+
+  <div class="error-box" id="errorBox"></div>
+</section>
+
+<!-- GAME -->
+<section id="game" class="screen">
+  <div class="round-info">
+    <div class="round-label mono" id="roundLabel">ROUND</div>
+    <h2 class="round-title" id="roundTitle">8<em>강</em></h2>
+    <div class="round-progress mono" id="roundProgress">1 / 4</div>
+  </div>
+
+  <div class="vs-arena">
+    <div class="candidate" id="leftCard">
+      <img id="leftImg" src="" alt="">
+      <div class="candidate-label mono">CHOOSE</div>
+    </div>
+    <div class="vs-divider">vs</div>
+    <div class="candidate" id="rightCard">
+      <img id="rightImg" src="" alt="">
+      <div class="candidate-label mono">CHOOSE</div>
+    </div>
+  </div>
+</section>
+
+<!-- RESULT -->
+<section id="result" class="screen">
+  <div class="result-tag mono">최종 우승</div>
+  <h2 class="result-title">당신의 <span>이상형</span></h2>
+  <div class="winner-frame pop">
+    <img id="winnerImg" src="" alt="winner">
+  </div>
+  <button class="restart-btn mono" id="restartBtn">다시 하기</button>
+</section>
+
+<script>
+  // ========= 상태 =========
+  let allImages = [];    // 매니페스트에서 로드된 전체 이미지 [{url, name}]
+  let bracket = [];
+  let nextRound = [];
+  let currentMatch = 0;
+  let totalMatchesInRound = 0;
+  let roundSize = 0;
+  let processing = false;
+
+  // ========= 엘리먼트 =========
+  const intro = document.getElementById('intro');
+  const game = document.getElementById('game');
+  const result = document.getElementById('result');
+  const introInfo = document.getElementById('introInfo');
+  const startBtn = document.getElementById('startBtn');
+  const errorBox = document.getElementById('errorBox');
+  const status = document.getElementById('status');
+
+  const leftCard = document.getElementById('leftCard');
+  const rightCard = document.getElementById('rightCard');
+  const leftImg = document.getElementById('leftImg');
+  const rightImg = document.getElementById('rightImg');
+  const roundLabel = document.getElementById('roundLabel');
+  const roundTitle = document.getElementById('roundTitle');
+  const roundProgress = document.getElementById('roundProgress');
+
+  const winnerImg = document.getElementById('winnerImg');
+  const restartBtn = document.getElementById('restartBtn');
+
+  // ========= 매니페스트 로드 =========
+  async function loadManifest() {
+    try {
+      const res = await fetch('images/manifest.json', { cache: 'no-cache' });
+      if (!res.ok) throw new Error(`manifest.json을 찾을 수 없어요 (HTTP ${res.status})`);
+      const data = await res.json();
+
+      // 두 가지 포맷 지원
+      // 1) { "images": ["1.jpg", "2.jpg", ...] }
+      // 2) ["1.jpg", "2.jpg", ...]
+      let list = Array.isArray(data) ? data : data.images;
+      if (!Array.isArray(list)) throw new Error('manifest.json 형식이 잘못됐어요 (배열이 아님)');
+
+      if (list.length < 2) {
+        throw new Error(`사진이 최소 2장 이상 필요해요 (현재: ${list.length}장)`);
+      }
+
+      allImages = list.map(name => ({
+        url: `images/${name}`,
+        name
+      }));
+
+      const target = nearestPow2(allImages.length);
+      const byes = target - allImages.length;
+      const roundName = roundDisplayName(target);
+      introInfo.innerHTML = `${allImages.length}명 참가 → <strong>${roundName}</strong> ${byes > 0 ? `(부전승 ${byes}명)` : ''}`;
+      startBtn.disabled = false;
+      status.textContent = 'READY';
+    } catch (err) {
+      introInfo.innerHTML = '';
+      errorBox.innerHTML = `⚠ ${err.message}<br><br>레포 루트에 <strong>images/</strong> 폴더와 <strong>images/manifest.json</strong> 파일이 있는지 확인해주세요.`;
+      status.textContent = 'ERROR';
+    }
+  }
+
+  function nearestPow2(n) {
+    let p = 2;
+    while (p < n) p *= 2;
+    return p;
+  }
+
+  function roundDisplayName(size) {
+    if (size === 2) return '결승';
+    if (size === 4) return '4강';
+    return `${size}강`;
+  }
+
+  function roundDisplayHTML(size) {
+    if (size === 2) return '결<em>승</em>';
+    if (size === 4) return '4<em>강</em>';
+    return `${size}<em>강</em>`;
+  }
+
+  // ========= 게임 시작 =========
+  startBtn.addEventListener('click', startTournament);
+
+  function startTournament() {
+    const shuffled = [...allImages].sort(() => Math.random() - 0.5);
+    const target = nearestPow2(shuffled.length);
+    const byes = target - shuffled.length;
+
+    // 부전승 배치
+    bracket = [];
+    for (let i = 0; i < byes; i++) {
+      bracket.push(shuffled[i]);
+      bracket.push(null);
+    }
+    for (let i = byes; i < shuffled.length; i++) {
+      bracket.push(shuffled[i]);
+    }
+
+    roundSize = bracket.length;
+    nextRound = [];
+    currentMatch = 0;
+    totalMatchesInRound = bracket.length / 2;
+
+    intro.classList.remove('active');
+    game.classList.add('active');
+    status.textContent = 'IN PROGRESS';
+    updateRoundUI();
+    showNextMatch();
+  }
+
+  function updateRoundUI() {
+    roundLabel.textContent = roundSize === 2 ? 'FINAL' : 'ROUND';
+    roundTitle.innerHTML = roundDisplayHTML(roundSize);
+  }
+
+  function showNextMatch() {
+    const idx = currentMatch * 2;
+    const left = bracket[idx];
+    const right = bracket[idx + 1];
+
+    if (left === null) {
+      nextRound.push(right);
+      advanceAfterBye();
+      return;
+    }
+    if (right === null) {
+      nextRound.push(left);
+      advanceAfterBye();
+      return;
+    }
+
+    leftCard.classList.remove('chosen', 'rejected');
+    rightCard.classList.remove('chosen', 'rejected');
+    leftImg.src = left.url;
+    rightImg.src = right.url;
+    leftCard.classList.add('fade-in');
+    rightCard.classList.add('fade-in');
+    setTimeout(() => {
+      leftCard.classList.remove('fade-in');
+      rightCard.classList.remove('fade-in');
+    }, 600);
+
+    roundProgress.textContent = `${currentMatch + 1} / ${totalMatchesInRound}`;
+    processing = false;
+  }
+
+  function advanceAfterBye() {
+    currentMatch++;
+    if (currentMatch >= totalMatchesInRound) {
+      goNextRound();
+    } else {
+      showNextMatch();
+    }
+  }
+
+  leftCard.addEventListener('click', () => choose('left'));
+  rightCard.addEventListener('click', () => choose('right'));
+
+  function choose(side) {
+    if (processing) return;
+    processing = true;
+
+    const idx = currentMatch * 2;
+    const left = bracket[idx];
+    const right = bracket[idx + 1];
+
+    const winner = side === 'left' ? left : right;
+    if (side === 'left') {
+      leftCard.classList.add('chosen');
+      rightCard.classList.add('rejected');
+    } else {
+      rightCard.classList.add('chosen');
+      leftCard.classList.add('rejected');
+    }
+    nextRound.push(winner);
+
+    setTimeout(() => {
+      currentMatch++;
+      if (currentMatch >= totalMatchesInRound) {
+        goNextRound();
+      } else {
+        showNextMatch();
+      }
+    }, 700);
+  }
+
+  function goNextRound() {
+    if (nextRound.length === 1) {
+      showWinner(nextRound[0]);
+      return;
+    }
+    bracket = nextRound;
+    nextRound = [];
+    currentMatch = 0;
+    roundSize = bracket.length;
+    totalMatchesInRound = bracket.length / 2;
+    updateRoundUI();
+    showNextMatch();
+  }
+
+  function showWinner(w) {
+    game.classList.remove('active');
+    result.classList.add('active');
+    winnerImg.src = w.url;
+    status.textContent = 'COMPLETE';
+  }
+
+  restartBtn.addEventListener('click', () => {
+    bracket = [];
+    nextRound = [];
+    currentMatch = 0;
+    result.classList.remove('active');
+    intro.classList.add('active');
+    status.textContent = 'READY';
+  });
+
+  // ========= 시작 =========
+  loadManifest();
+</script>
+
+</body>
+</html>
