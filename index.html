@@ -25,25 +25,29 @@
     background: var(--bg);
     color: var(--ink);
     font-family: 'Fraunces', serif;
-    overflow-x: hidden;
   }
 
   body {
     background-image:
       radial-gradient(ellipse at top left, rgba(255, 61, 46, 0.08), transparent 50%),
       radial-gradient(ellipse at bottom right, rgba(255, 210, 63, 0.06), transparent 50%);
-    min-height: 100vh;
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
 
   .mono { font-family: 'JetBrains Mono', monospace; }
 
   /* ===== 상단 헤더 ===== */
   header {
-    padding: 24px 32px;
+    padding: 16px 32px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid var(--line);
+    flex-shrink: 0;
   }
 
   header .logo {
@@ -65,8 +69,10 @@
   /* ===== 화면 공통 ===== */
   .screen {
     display: none;
-    min-height: calc(100vh - 73px);
-    padding: 48px 32px;
+    flex: 1;
+    min-height: 0;
+    padding: 24px 32px;
+    overflow-y: auto;
   }
   .screen.active { display: block; }
 
@@ -152,11 +158,19 @@
   }
 
   /* ===== 게임 화면 ===== */
-  #game.active { display: flex; flex-direction: column; }
+  #game {
+    padding: 12px 16px 16px;
+    overflow: hidden;
+  }
+  #game.active {
+    display: flex;
+    flex-direction: column;
+  }
 
   .round-info {
     text-align: center;
-    margin-bottom: 32px;
+    margin-bottom: 12px;
+    flex-shrink: 0;
   }
   .round-label {
     font-family: 'JetBrains Mono', monospace;
@@ -167,7 +181,7 @@
     margin-bottom: 8px;
   }
   .round-title {
-    font-size: clamp(36px, 6vw, 64px);
+    font-size: clamp(28px, 4.5vw, 48px);
     font-weight: 900;
     letter-spacing: -0.03em;
     line-height: 1;
@@ -187,16 +201,15 @@
   .vs-arena {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
-    gap: 24px;
-    align-items: center;
+    gap: 16px;
+    align-items: stretch;
     flex: 1;
-    max-width: 1400px;
-    margin: 0 auto;
     width: 100%;
+    margin: 0;
+    min-height: 0;
   }
 
   .candidate {
-    aspect-ratio: 3 / 4;
     background: var(--bg-soft);
     border: 1px solid var(--line);
     overflow: hidden;
@@ -204,11 +217,14 @@
     position: relative;
     transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
     border-radius: 4px;
+    height: 100%;
+    min-height: 0;
   }
   .candidate img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    display: block;
     transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
   }
   .candidate:hover {
@@ -228,20 +244,24 @@
   }
   .candidate:hover::after { opacity: 1; }
 
-  .candidate-label {
+  .candidate-name {
     position: absolute;
-    bottom: 24px;
-    left: 24px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 60px 20px 20px;
+    background: linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.4) 60%, transparent);
     color: var(--ink);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    opacity: 0;
-    transition: opacity 0.3s;
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: clamp(20px, 2.6vw, 36px);
+    letter-spacing: -0.01em;
+    text-align: center;
     z-index: 2;
+    pointer-events: none;
+    line-height: 1.2;
+    word-break: keep-all;
   }
-  .candidate:hover .candidate-label { opacity: 1; }
 
   .vs-divider {
     font-family: 'Fraunces', serif;
@@ -323,6 +343,18 @@
     border-radius: 2px;
   }
 
+  .winner-name {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-style: italic;
+    font-size: clamp(32px, 6vw, 64px);
+    color: var(--accent-2);
+    letter-spacing: -0.02em;
+    margin-bottom: 32px;
+    text-align: center;
+    line-height: 1.1;
+  }
+
   .restart-btn {
     background: transparent;
     color: var(--ink);
@@ -372,12 +404,17 @@
     .vs-arena {
       grid-template-columns: 1fr;
       grid-template-rows: 1fr auto 1fr;
-      gap: 16px;
+      gap: 8px;
     }
-    .candidate { aspect-ratio: 4 / 3; }
-    .vs-divider { font-size: 40px; }
-    header { padding: 16px 20px; }
-    .screen { padding: 24px 16px; }
+    .vs-divider { font-size: 28px; }
+    header { padding: 12px 16px; }
+    .screen { padding: 16px 12px; }
+    #game { padding: 8px 12px 12px; }
+    .candidate-name {
+      font-size: clamp(18px, 5vw, 26px);
+      padding: 36px 12px 10px;
+    }
+    .round-info { margin-bottom: 8px; }
   }
 </style>
 </head>
@@ -412,12 +449,12 @@
   <div class="vs-arena">
     <div class="candidate" id="leftCard">
       <img id="leftImg" src="" alt="">
-      <div class="candidate-label mono">CHOOSE</div>
+      <div class="candidate-name" id="leftName"></div>
     </div>
     <div class="vs-divider">vs</div>
     <div class="candidate" id="rightCard">
       <img id="rightImg" src="" alt="">
-      <div class="candidate-label mono">CHOOSE</div>
+      <div class="candidate-name" id="rightName"></div>
     </div>
   </div>
 </section>
@@ -429,6 +466,7 @@
   <div class="winner-frame pop">
     <img id="winnerImg" src="" alt="winner">
   </div>
+  <div class="winner-name" id="winnerName"></div>
   <button class="restart-btn mono" id="restartBtn">다시 하기</button>
 </section>
 
@@ -455,11 +493,14 @@
   const rightCard = document.getElementById('rightCard');
   const leftImg = document.getElementById('leftImg');
   const rightImg = document.getElementById('rightImg');
+  const leftName = document.getElementById('leftName');
+  const rightName = document.getElementById('rightName');
   const roundLabel = document.getElementById('roundLabel');
   const roundTitle = document.getElementById('roundTitle');
   const roundProgress = document.getElementById('roundProgress');
 
   const winnerImg = document.getElementById('winnerImg');
+  const winnerName = document.getElementById('winnerName');
   const restartBtn = document.getElementById('restartBtn');
 
   // ========= 매니페스트 로드 =========
@@ -479,10 +520,16 @@
         throw new Error(`사진이 최소 2장 이상 필요해요 (현재: ${list.length}장)`);
       }
 
-      allImages = list.map(name => ({
-        url: `images/${name}`,
-        name
-      }));
+      allImages = list.map(entry => {
+        const filename = typeof entry === 'string' ? entry : entry.file;
+        const displayName = typeof entry === 'object' && entry.name
+          ? entry.name
+          : filename.replace(/\.[^.]+$/, '');
+        return {
+          url: `images/${encodeURIComponent(filename)}`,
+          name: displayName
+        };
+      });
 
       const target = nearestPow2(allImages.length);
       const byes = target - allImages.length;
@@ -570,6 +617,8 @@
     rightCard.classList.remove('chosen', 'rejected');
     leftImg.src = left.url;
     rightImg.src = right.url;
+    leftName.textContent = left.name;
+    rightName.textContent = right.name;
     leftCard.classList.add('fade-in');
     rightCard.classList.add('fade-in');
     setTimeout(() => {
@@ -639,6 +688,7 @@
     game.classList.remove('active');
     result.classList.add('active');
     winnerImg.src = w.url;
+    winnerName.textContent = w.name;
     status.textContent = 'COMPLETE';
   }
 
