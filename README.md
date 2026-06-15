@@ -3,7 +3,7 @@
 토너먼트 형식으로 좋아하는 사진을 골라가는 이상형 월드컵 웹앱.
 사진 개수에 따라 자동으로 토너먼트 라운드가 결정되고, 2의 제곱수가 아닐 경우 부전승으로 처리됩니다.
 
-🔗 **Live Demo**: `https://[your-username].github.io/[repo-name]/`
+🔗 **Live Demo**: <https://hokore-dev.github.io/ideal-cup/>
 
 ---
 
@@ -79,7 +79,7 @@ GitHub Actions가 자동으로 GitHub Pages에 배포해줍니다 (1-2분 소요
 1. GitHub에 새 레포 만들기 (Public)
 2. 이 폴더 통째로 푸시
 3. Settings → Pages → Source를 **"GitHub Actions"**로 설정
-4. `https://[username].github.io/[repo-name]/` 에서 확인
+4. https://hokore-dev.github.io/ideal-cup/ 에서 확인
 
 ---
 
